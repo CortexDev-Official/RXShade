@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+dist/
+
+# Installer copy served by the website (built, not source)
+RXShadeWebsite/RXShadeSetup.exe
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+
+# NuGet
+*.nupkg
+packages/
+
+# OS cruft
+Thumbs.db
+desktop.ini

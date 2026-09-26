@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RXShade — Shader filters for Roblox (Coming Soon)</title>
+<link rel="icon" type="image/png" href="RXShade.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0D0F0D;
+    --panel: #141613;
+    --panel-alt: #181B17;
+    --border: #2A2E2A;
+    --border-bright: #3D423C;
+    --text-dim: #7C857B;
+    --text-body: #B4BDB4;
+    --text-bright: #F2F5F0;
+    --accent: #D4FF3D;
+    --accent-dim: #8FA832;
+    --red-channel: #FF6B5B;
+    --green-channel: #6BFF9B;
+    --blue-channel: #6BB6FF;
+
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-body);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.012) 0px,
+      rgba(255,255,255,0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    opacity: 0.5;
+  }
+
+  a { color: inherit; }
+
+  ::selection { background: var(--accent); color: #0D0F0D; }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+  .mono { font-family: var(--font-mono); }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .hero-eyebrow { animation: fadeInUp 0.6s ease-out 0.1s both; }
+  .hero h1 { animation: fadeInUp 0.6s ease-out 0.2s both; }
+  .hero-sub { animation: fadeInUp 0.6s ease-out 0.3s both; }
+  .hero-actions { animation: fadeInUp 0.6s ease-out 0.4s both; }
+  .hero-right { animation: fadeIn 0.8s ease-out 0.3s both; }
+
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+
+  .topbar {
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(13, 15, 13, 0.92);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+  }
+
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--text-bright);
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+
+  .brand-mark { width: 24px; height: 24px; flex-shrink: 0; object-fit: contain; border-radius: 5px; }
+
+  .topnav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .topnav a { text-decoration: none; color: var(--text-body); transition: color 0.15s ease; }
+  .topnav a:hover { color: var(--text-bright); }
+
+  .topnav .cta-small {
+    color: var(--bg);
+    background: var(--accent);
+    padding: 7px 14px;
+    border: 1px solid var(--accent);
+    font-weight: 500;
+  }
+  .topnav .cta-small:hover { background: var(--text-bright); border-color: var(--text-bright); }
+
+  .hero { border-bottom: 1px solid var(--border); }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    min-height: 560px;
+  }
+
+  .hero-left {
+    padding: 72px 48px 72px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--accent-dim);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hero-eyebrow .dot { width: 6px; height: 6px; background: var(--accent); flex-shrink: 0; }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 52px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text-bright);
+    max-width: 480px;
+  }
+
+  .hero-sub { margin-top: 24px; font-size: 17px; line-height: 1.65; color: var(--text-body); max-width: 440px; }
+
+  .hero-actions { margin-top: 36px; display: flex; align-items: center; gap: 20px; }
+
+  .btn-primary {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--accent);
+    color: #0D0F0D;
+    border: 1px solid var(--accent);
+    padding: 13px 22px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .btn-primary:hover:not(.disabled) { background: #E8FF8A; }
+  .btn-primary:active:not(.disabled) { transform: translateY(1px); }
+
+  .btn-primary.disabled {
+    background: var(--panel-alt);
+    color: var(--text-dim);
+    border-color: var(--border);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .btn-secondary {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text-body);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-bright);
+    padding-bottom: 2px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .btn-secondary:hover { color: var(--text-bright); border-color: var(--text-bright); }
+
+  .hero-meta {
+    margin-top: 44px;
+    display: flex;
+    gap: 28px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .hero-meta span b { color: var(--text-body); font-weight: 500; }
+
+  .hero-right {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .hero-right > div { width: 100%; }
+
+  .comparator {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-width: 100%;
+    border: 1px solid var(--border-bright);
+    overflow: hidden;
+    cursor: ew-resize;
+    user-select: none;
+    transition: border-color 0.2s ease;
+  }
+  .comparator:hover { border-color: var(--accent-dim); }
+
+  .comp-layer { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .comp-scene { width: 100%; height: 100%; position: relative; }
+  .comp-flat { background-image: url('RXShade-Before.png'); background-size: cover; background-position: center; }
+  .comp-shaded { background-image: url('RXshade-After.png'); background-size: cover; background-position: center; }
+  .comp-after-wrap { position: absolute; inset: 0; overflow: hidden; }
+
+  .comp-divider {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: var(--accent);
+    left: 50%;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+  }
+
+  .comp-handle {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 34px; height: 34px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    color: #0D0F0D;
+    transition: transform 0.15s ease;
+  }
+  .comp-handle:hover { transform: translate(-50%, -50%) scale(1.1); }
+  .comp-handle svg { width: 16px; height: 16px; }
+
+  .comp-tag {
+    position: absolute;
+    top: 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--text-bright);
+    background: rgba(13,15,13,0.75);
+    padding: 4px 8px;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .comp-tag.left { left: 10px; }
+  .comp-tag.right { right: 10px; }
+
+  section { border-bottom: 1px solid var(--border); }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 40px 0 0;
+    margin-bottom: 8px;
+  }
+
+  .section-num { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--text-bright);
+    letter-spacing: -0.01em;
+  }
+
+  .panel-rows { padding-bottom: 56px; }
+
+  .panel-row {
+    display: grid;
+    grid-template-columns: 64px 1fr 320px;
+    gap: 32px;
+    align-items: center;
+    padding: 28px 0;
+    border-top: 1px solid var(--border);
+  }
+  .panel-row:first-of-type { border-top: 1px solid var(--border); margin-top: 28px; }
+
+  .row-icon {
+    width: 44px; height: 44px;
+    border: 1px solid var(--border-bright);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--panel);
+    flex-shrink: 0;
+  }
+  .row-icon svg { width: 24px; height: 24px; }
+
+  .row-text h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 19px;
+    color: var(--text-bright);
+    margin-bottom: 6px;
+  }
+
+  .row-text p { font-size: 15px; color: var(--text-body); max-width: 480px; }
+
+  .row-diagram {
+    height: 88px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px;
+  }
+  .row-diagram svg { width: 100%; height: 100%; }
+
+  .why { padding: 56px 0 64px; }
+  .why-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+  .why-body { max-width: 720px; }
+  .why-body p { font-size: 16.5px; line-height: 1.75; color: var(--text-body); margin-bottom: 18px; }
+  .why-body p:last-child { margin-bottom: 0; }
+  .why-body b { color: var(--text-bright); font-weight: 600; }
+
+  .timeline-strip {
+    margin-top: 32px;
+    display: flex;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .timeline-item { flex: 1; padding: 12px 16px; border-right: 1px solid var(--border); }
+  .timeline-item:last-child { border-right: none; }
+  .timeline-item .t-year { color: var(--text-bright); display: block; margin-bottom: 4px; font-size: 13px; }
+
+  .spec { padding: 48px 0 56px; }
+  .spec-table { margin-top: 24px; border: 1px solid var(--border); }
+  .spec-row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+  }
+  .spec-row:first-child { border-top: none; }
+  .spec-key { padding: 14px 18px; color: var(--text-dim); background: var(--panel); border-right: 1px solid var(--border); }
+  .spec-val { padding: 14px 18px; color: var(--text-body); }
+  .spec-val .accent-text { color: var(--accent); }
+
+  .final-cta {
+    padding: 64px 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 32px;
+  }
+  .final-cta h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 30px;
+    color: var(--text-bright);
+    letter-spacing: -0.01em;
+    max-width: 460px;
+  }
+  .final-cta-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .final-cta-note { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); }
+
+  footer { padding: 28px 0; }
+  .footer-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { text-decoration: none; color: var(--text-dim); transition: color 0.15s ease; }
+  .footer-links a:hover { color: var(--text-body); }
+
+  @media (max-width: 880px) {
+    .wrap { padding: 0 20px; }
+    .topbar-inner { height: auto; flex-wrap: wrap; padding: 12px 0; row-gap: 10px; }
+    .topnav { gap: 14px; flex-wrap: wrap; width: 100%; }
+    .topnav a:not(.cta-small) { display: none; }
+    .topnav .cta-small { margin-left: auto; }
+    .hero-grid { grid-template-columns: 1fr; min-height: 0; }
+    .hero-left { border-right: none; border-bottom: 1px solid var(--border); padding: 48px 0 40px; }
+    .hero h1 { font-size: 38px; max-width: 100%; }
+    .hero-sub { max-width: 100%; }
+    .hero-right { padding: 32px 0; }
+    .hero-meta { flex-wrap: wrap; row-gap: 12px; }
+    .panel-row { grid-template-columns: 1fr; gap: 16px; }
+    .row-diagram { order: 3; }
+    .timeline-strip { flex-direction: column; }
+    .timeline-item { border-right: none; border-top: 1px solid var(--border); }
+    .timeline-item:first-child { border-top: none; }
+    .spec-row { grid-template-columns: 140px 1fr; }
+    .final-cta { grid-template-columns: 1fr; text-align: left; }
+    .final-cta-actions { align-items: flex-start; }
+    .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+
+  @media (max-width: 520px) {
+    .hero h1 { font-size: 32px; }
+    .section-title { font-size: 22px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top">
+      <img src="RXShade.png" alt="RXShade Logo" class="brand-mark">
+      RXShade
+    </a>
+    <nav class="topnav">
+      <a href="#how-it-works">how it works</a>
+      <a href="#filters">filters</a>
+      <a href="#requirements">requirements</a>
+      <a href="#download" class="cta-small">coming soon</a>
+    </nav>
+  </div>
+</div>
+
+<div class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div class="hero-eyebrow"><span class="dot"></span>WINDOWS 10+ · FREE · OPEN SOURCE</div>
+        <h1>Shader filters for Roblox, brought back.</h1>
+        <p class="hero-sub">A visual filter overlay for the Roblox Desktop window. No files injected, completely external.</p>
+        <div class="hero-actions">
+          <a href="#requirements" class="btn-primary disabled">
+            Coming Soon
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V10M7 10L3.5 6.5M7 10L10.5 6.5M1.5 12.5H12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#how-it-works" class="btn-secondary">Learn how it works</a>
+        </div>
+        <div class="hero-meta">
+          <span><b>No</b> injection</span>
+          <span><b>No</b> game files touched</span>
+          <span><b>Capture-only</b> overlay</span>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div>
+          <div class="comparator" id="comparator">
+            <div class="comp-tag left">NO OVERLAY</div>
+            <div class="comp-tag right">RXSHADE</div>
+            <div class="comp-layer comp-scene comp-flat"></div>
+            <div class="comp-after-wrap" id="compAfter">
+              <div class="comp-layer comp-scene comp-shaded" style="width: 100%;"></div>
+            </div>
+            <div class="comp-divider" id="compDivider"></div>
+            <div class="comp-handle" id="compHandle">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M5 3L1 8L5 13M11 3L15 8L11 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="how-it-works">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-title">How it works</span>
+      <span class="section-num">01 / 04</span>
+    </div>
+
+    <div class="panel-rows">
+      <div class="panel-row animate-on-scroll">
+        <div class="row-icon">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" stroke="#D4FF3D" stroke-width="1.4"/><path d="M3 17L9 17M15 17L21 17M12 17V20" stroke="#D4FF3D" stroke-width="1.4"/><path d="M7 20H17" stroke="#D4FF3D" stroke-width="1.4"/></svg>
+        </div>
+        <div class="row-text">
+          <h3>Sits on top of the window</h3>
+          <p>Runs as a separate overlay process. It draws a filter layer directly above the Roblox window without modifying the game.</p>
+        </div>
+        <div class="row-diagram">
+          <svg viewBox="0 0 260 80" fill="none">
+            <rect x="10" y="35" width="180" height="35" fill="#181B17" stroke="#2A2E2A"/>
+            <text x="20" y="57" font-family="IBM Plex Mono" font-size="10" fill="#7C857B">Roblox.exe</text>
+            <rect x="30" y="12" width="180" height="35" fill="none" stroke="#D4FF3D" stroke-dasharray="3 3"/>
+            <text x="40" y="34" font-family="IBM Plex Mono" font-size="10" fill="#D4FF3D">RXShade overlay</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="panel-row animate-on-scroll">
+        <div class="row-icon">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#D4FF3D" stroke-width="1.4"/><path d="M12 3C14.5 6 14.5 18 12 21M12 3C9.5 6 9.5 18 12 21M3 12H21" stroke="#D4FF3D" stroke-width="1.2"/></svg>
+        </div>
+        <div class="row-text">
+          <h3>Recreates the reshade look</h3>
+          <p>Real-time color grading and contrast. The visual style from BloxShade and RoShade, rebuilt from scratch.</p>
+        </div>
+        <div class="row-diagram">
+          <svg viewBox="0 0 260 80" fill="none">
+            <polyline points="20,65 60,55 100,30 140,20 180,15 220,10" stroke="#FF6B5B" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <polyline points="20,65 60,45 100,35 140,32 180,20 220,12" stroke="#6BFF9B" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <polyline points="20,65 60,50 100,32 140,18 180,12 220,8" stroke="#6BB6FF" stroke-width="1.2" fill="none" opacity="0.6"/>
+            <line x1="20" y1="65" x2="220" y2="65" stroke="#2A2E2A"/>
+            <line x1="20" y1="10" x2="20" y2="65" stroke="#2A2E2A"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="panel-row animate-on-scroll">
+        <div class="row-icon">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" stroke="#D4FF3D" stroke-width="1.4"/><rect x="13" y="4" width="7" height="7" stroke="#D4FF3D" stroke-width="1.4"/><rect x="4" y="13" width="7" height="7" stroke="#D4FF3D" stroke-width="1.4"/><rect x="13" y="13" width="7" height="7" stroke="#D4FF3D" stroke-width="1.4"/></svg>
+        </div>
+        <div class="row-text">
+          <h3>Nothing else</h3>
+          <p>No game modification, no injected scripts. RXShade does exactly one job — apply a visual filter — and nothing else.</p>
+        </div>
+        <div class="row-diagram">
+          <svg viewBox="0 0 260 80" fill="none">
+            <rect x="20" y="20" width="60" height="40" fill="none" stroke="#2A2E2A" stroke-width="1.2" stroke-dasharray="3 3"/>
+            <text x="50" y="44" font-family="IBM Plex Mono" font-size="8.5" fill="#5A625A" text-anchor="middle">scripts</text>
+            <rect x="100" y="20" width="60" height="40" fill="none" stroke="#2A2E2A" stroke-width="1.2" stroke-dasharray="3 3"/>
+            <text x="130" y="44" font-family="IBM Plex Mono" font-size="8.5" fill="#5A625A" text-anchor="middle">game mod</text>
+            <rect x="180" y="20" width="60" height="40" fill="none" stroke="#D4FF3D" stroke-width="1.6"/>
+            <text x="210" y="41" font-family="IBM Plex Mono" font-size="8.5" fill="#D4FF3D" text-anchor="middle">filter</text>
+            <text x="210" y="52" font-family="IBM Plex Mono" font-size="8.5" fill="#D4FF3D" text-anchor="middle">overlay</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="filters">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-title">Filters</span>
+      <span class="section-num">02 / 04</span>
+    </div>
+
+    <div class="why">
+      <div class="why-body animate-on-scroll">
+        <p>Every filter is an independent HLSL shader pass with its own toggle and 0–100% sliders. They stack in a fixed order, and none of them touch the game — they act on the captured frame on your GPU.</p>
+      </div>
+    </div>
+
+    <div class="spec animate-on-scroll" style="padding-top:0;">
+      <div class="spec-table">
+        <div class="spec-row"><div class="spec-key">Sharpen</div><div class="spec-val">Contrast-adaptive sharpening (CAS-style). Flat areas sharpen more; regions already near clipping are left alone so edges do not ring.</div></div>
+        <div class="spec-row"><div class="spec-key">FXAA</div><div class="spec-val">Luminance-based edge anti-aliasing. The only AA available when all you have is a finished colour image.</div></div>
+        <div class="spec-row"><div class="spec-key">Bloom</div><div class="spec-val">Soft-knee bright-pass at quarter resolution, two separable gaussian iterations, additive composite. Light glows instead of clipping flat.</div></div>
+        <div class="spec-row"><div class="spec-key">Wet reflection</div><div class="spec-val"><span class="accent-text">APPROX</span> — a screen-wide sheen, specular shine on objects, and a floor mirror below a horizon line you position yourself. Stylised, not physically accurate.</div></div>
+        <div class="spec-row"><div class="spec-key">Focus</div><div class="spec-val"><span class="accent-text">APPROX</span> — radial defocus by distance from screen centre, not by scene depth.</div></div>
+        <div class="spec-row"><div class="spec-key">HDR</div><div class="spec-val">ACES filmic tone mapping applied in linear light, normalised to its own white point, plus local contrast, highlight recovery and shadow lift.</div></div>
+        <div class="spec-row"><div class="spec-key">Colour grading</div><div class="spec-val">Exposure, temperature, contrast, saturation and an aspect-corrected vignette, applied in that order.</div></div>
+        <div class="spec-row"><div class="spec-key">Chromatic aberration</div><div class="spec-val">Transverse lens fringing, weighted by radius so the centre stays sharp. Capped at about 1.2% of frame width.</div></div>
+        <div class="spec-row"><div class="spec-key">Film grain</div><div class="spec-val">Animated grain quantised into pixel-sized cells, weighted to mid-tones the way real film grain behaves.</div></div>
+      </div>
+    </div>
+
+    <div class="section-head" style="padding-top:48px;">
+      <span class="section-title" style="font-size:22px;">Presets</span>
+      <span class="section-num">one tap</span>
+    </div>
+    <div class="spec animate-on-scroll" style="padding-top:0;">
+      <div class="spec-table">
+        <div class="spec-row"><div class="spec-key">Crisp</div><div class="spec-val">Clean and legible. Sharpening plus AA, no colour shift.</div></div>
+        <div class="spec-row"><div class="spec-key">Vivid</div><div class="spec-val">Punchy, saturated colours with a touch of bloom.</div></div>
+        <div class="spec-row"><div class="spec-key">Cinematic</div><div class="spec-val">Desaturated and contrasty, with vignette, defocus and grain.</div></div>
+        <div class="spec-row"><div class="spec-key">Dreamy</div><div class="spec-val">Heavy glow and a shallow sharp centre.</div></div>
+        <div class="spec-row"><div class="spec-key">Night</div><div class="spec-val">Lifts crushed shadows so dark scenes stay readable.</div></div>
+        <div class="spec-row"><div class="spec-key">Water</div><div class="spec-val">Wet surfaces — glossy sheen plus a floor mirror.</div></div>
+        <div class="spec-row"><div class="spec-key">HDR</div><div class="spec-val">ACES tone mapping with strong local contrast.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-title">Why it exists</span>
+      <span class="section-num">03 / 04</span>
+    </div>
+
+    <div class="why">
+      <div class="why-grid">
+        <div class="why-body animate-on-scroll">
+          <p>Tools like <b>BloxShade</b> and <b>RoShade</b> injected files directly into Roblox to hook its renderer. That got them banned.</p>
+          <p>RXShade takes a different approach. It draws a filter layer <b>on top of the window</b> from the outside, leaving Roblox's process completely untouched.</p>
+
+          <div class="timeline-strip">
+            <div class="timeline-item"><span class="t-year">BloxShade / RoShade</span>Inject files into Roblox to hook the renderer</div>
+            <div class="timeline-item"><span class="t-year">Result</span>Detected and banned by Roblox's anti-cheat</div>
+            <div class="timeline-item"><span class="t-year">RXShade</span>No injection — overlays the window from outside the process</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="requirements">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-title">Requirements</span>
+      <span class="section-num">04 / 04</span>
+    </div>
+
+    <div class="spec animate-on-scroll">
+      <div class="spec-table">
+        <div class="spec-row">
+          <div class="spec-key">OS</div>
+          <div class="spec-val">Windows 10 <span class="accent-text">or later</span> (64-bit)</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-key">GPU</div>
+          <div class="spec-val">Any Direct3D 11 capable GPU. Integrated is enough; a discrete card gives more headroom.</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-key">GAME</div>
+          <div class="spec-val">The Roblox desktop client. Browser tabs are not supported.</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-key">COST</div>
+          <div class="spec-val"><span class="accent-text">Free</span> — no license key, no paid tier</div>
+        </div>
+        <div class="spec-row">
+          <div class="spec-key">STATUS</div>
+          <div class="spec-val"><span class="accent-text">In Development</span> — Coming Soon</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <div class="final-cta animate-on-scroll">
+      <h2>RXShade is currently in active development.</h2>
+      <div class="final-cta-actions">
+        <a href="#" class="btn-primary disabled">
+          Coming Soon
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1V10M7 10L3.5 6.5M7 10L10.5 6.5M1.5 12.5H12.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <span class="final-cta-note">Windows 10/11 · 64-bit · free &amp; open source</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-inner">
+    <span>RXShade — In Development</span>
+    <div class="footer-links">
+      <a href="#filters">Filters</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#how-it-works">How it works</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    const comparator = document.getElementById('comparator');
+    const compAfter = document.getElementById('compAfter');
+    const compDivider = document.getElementById('compDivider');
+    const compHandle = document.getElementById('compHandle');
+    let dragging = false;
+
+    function setPosition(clientX) {
+      const rect = comparator.getBoundingClientRect();
+      let pct = ((clientX - rect.left) / rect.width) * 100;
+      pct = Math.max(4, Math.min(96, pct));
+      compAfter.style.clipPath = `inset(0 0 0 ${pct}%)`;
+      compDivider.style.left = pct + '%';
+      compHandle.style.left = pct + '%';
+    }
+
+    comparator.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      setPosition(e.clientX);
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (dragging) setPosition(e.clientX);
+    });
+    window.addEventListener('pointerup', () => { dragging = false; });
+
+    compAfter.style.clipPath = 'inset(0 0 0 50%)';
+  })();
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+  });
+</script>
+
+</body>
+</html>

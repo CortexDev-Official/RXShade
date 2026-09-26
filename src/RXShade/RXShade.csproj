@@ -1,0 +1,94 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!--
+      net8.0-windows10.0.19041.0 gives us the C#/WinRT projections for
+      Windows.Graphics.Capture (the whole point of this app). 19041 is the
+      floor for Direct3D11CaptureFramePool.CreateFreeThreaded.
+    -->
+    <!--
+      Target the 22621 SDK so GraphicsCaptureAccess / IsBorderRequired are
+      available to compile against (they are how the yellow capture border is
+      removed), but keep the SUPPORTED version at 19041 so the app still runs
+      on Windows 10 2004. Every 22000+ API is guarded at runtime.
+    -->
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>12</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Shell icon for the built .exe (Explorer, taskbar, installer). -->
+    <ApplicationIcon>RXShade.ico</ApplicationIcon>
+    <AssemblyName>RXShade</AssemblyName>
+    <RootNamespace>RXShade</RootNamespace>
+    <!--
+      We provide our own Main so the selftest switch can run the headless
+      pipeline benchmark without ever constructing the WPF UI. This tells the
+      compiler to prefer it over the one WPF generates from App.xaml.
+    -->
+    <StartupObject>RXShade.Program</StartupObject>
+    <Product>RXShade</Product>
+    <Company>CortexDev</Company>
+    <Authors>CortexDev</Authors>
+    <!-- Assembly/file versions must stay numeric for the CLR and the
+         installer; the human-readable beta label lives in InformationalVersion
+         (and is shown by the UI). -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0 beta</InformationalVersion>
+    <Description>Real-time GPU shader filters for the Roblox window. Capture-only overlay with no injection, no memory reads and no game files touched.</Description>
+    <!--
+      InvariantGlobalization must stay OFF: WPF data binding resolves a
+      specific culture for every BindingExpression, and with invariant
+      globalization that lookup throws before the first frame is drawn.
+    -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Single-file self-contained publish -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>embedded</DebugType>
+    <!-- CsWinRT AOT/trim warnings are noise for this app; we ship untrimmed. -->
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.DXGI" Version="3.8.3" />
+    <PackageReference Include="Vortice.D3DCompiler" Version="3.8.3" />
+    <!--
+      DirectComposition is how the overlay is presented. A WS_EX_LAYERED window
+      with a bitblt swap chain is the slowest path Windows has - DWM must read
+      and alpha-composite a redirection surface every frame, which drags the
+      game's own presentation rate down with it.
+    -->
+    <PackageReference Include="Vortice.DirectComposition" Version="3.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Shaders ship as embedded resources and are compiled at startup with
+      d3dcompiler_47.dll (inbox on Windows 10/11). Keeps the single-file
+      publish clean and lets shaders be edited without a Windows SDK/fxc.
+    -->
+    <EmbeddedResource Include="Shaders\*.hlsl" />
+    <EmbeddedResource Include="Shaders\*.hlsli" />
+    <None Remove="Shaders\*.hlsl" />
+    <None Remove="Shaders\*.hlsli" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Brand logo shown in the title bar and the welcome panel. -->
+    <Resource Include="Assets\RXShade-Logo.png" />
+  </ItemGroup>
+
+</Project>
