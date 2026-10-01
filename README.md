@@ -2,6 +2,7 @@
 
 Real-time visual filters for the Roblox client, inspired by NVIDIA Freestyle.
 
+
 **Developer:** CortexDev · **Version:** 1.0.0 beta · **License:** MIT
 
 ## What it does
@@ -122,20 +123,9 @@ This writes PNGs for different filter combinations and is useful for checking vi
 - **Using integrated graphics:** RXShade uses the GPU connected to your display. If your dedicated GPU says no monitor is attached in the self-test, your display cable may be plugged into the motherboard instead.
 - **Low or capped FPS:** RXShade cannot render frames the game does not produce. Check the footer's rendered/delivered FPS and run the self-test. In Roblox, set **Frame Rate Cap** to **Uncapped** or at least your monitor's refresh rate. Advanced users can also set `DFIntTaskSchedulerTargetFps` in the Roblox client's `ClientAppSettings.json`; RXShade does not edit Roblox files.
 
-## Project structure
 
-```text
-src/RXShade/
-  Capture/      Window capture
-  Graphics/     D3D11 and filter pipeline
-  Interop/      Windows interop
-  Models/       Settings and presets
-  Shaders/      HLSL filters
-  ViewModels/   MainViewModel
-  Views/        Overlay and UI
-installer/      Installer script
- tools/         Icon generation script
-```
+![RXShade](https://github.com/CortexDev-Official/RXShade/blob/main/RXShade-Icon.png?raw=true)
+
 
 Released under the MIT License. See `LICENSE`.
 
