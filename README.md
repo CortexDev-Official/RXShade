@@ -2,7 +2,6 @@
 
 Real-time visual filters for the Roblox client, inspired by NVIDIA Freestyle.
 
-
 **Developer:** CortexDev · **Version:** 1.0.0 beta · **License:** MIT
 
 ## What it does
@@ -124,9 +123,7 @@ This writes PNGs for different filter combinations and is useful for checking vi
 - **Low or capped FPS:** RXShade cannot render frames the game does not produce. Check the footer's rendered/delivered FPS and run the self-test. In Roblox, set **Frame Rate Cap** to **Uncapped** or at least your monitor's refresh rate. Advanced users can also set `DFIntTaskSchedulerTargetFps` in the Roblox client's `ClientAppSettings.json`; RXShade does not edit Roblox files.
 
 
-![RXShade](https://github.com/CortexDev-Official/RXShade/blob/main/RXShade-Icon.png?raw=true)
-
 
 Released under the MIT License. See `LICENSE`.
 
-Built by **CortexDev**.
+Built by **[CortexDev](https://cortexdev.online)**.
