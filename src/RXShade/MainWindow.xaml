@@ -4,15 +4,15 @@
         xmlns:views="clr-namespace:RXShade.Views"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="RXShade"
-        Width="960" Height="640"
-        MinWidth="860" MinHeight="560"
+        Width="980" Height="660"
+        MinWidth="880" MinHeight="580"
         WindowStyle="None"
         Background="{StaticResource BgBase}"
         TextOptions.TextRenderingMode="ClearType"
         UseLayoutRounding="True">
 
     <shell:WindowChrome.WindowChrome>
-        <shell:WindowChrome CaptionHeight="44" ResizeBorderThickness="6"
+        <shell:WindowChrome CaptionHeight="48" ResizeBorderThickness="6"
                             GlassFrameThickness="0" CornerRadius="8"
                             UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
@@ -20,7 +20,6 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <views:EnumMatchConverter x:Key="PresetMatch"/>
-        <views:ActiveBorderConverter x:Key="ActiveBorder"/>
         <views:ActiveBackgroundConverter x:Key="ActiveBg"/>
     </Window.Resources>
 
@@ -29,15 +28,15 @@
             BorderBrush="{StaticResource BorderStrong}" BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="44"/>
+                <RowDefinition Height="48"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="32"/>
+                <RowDefinition Height="34"/>
             </Grid.RowDefinitions>
 
             <!-- ============ TITLE BAR ============ -->
             <Grid Grid.Row="0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
-                    <Image Source="Assets/RXShade-Logo.png" Width="28" Height="28"
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Image Source="Assets/RXShade-Logo.png" Width="26" Height="26"
                            RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Text="RXShade" Style="{StaticResource TitleText}"
                                VerticalAlignment="Center" Margin="10,0,0,0"/>
@@ -50,29 +49,42 @@
                             Padding="7,2" Margin="12,0,0,0" VerticalAlignment="Center"
                             Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}">
                         <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="7" Height="7" Fill="{StaticResource Accent}"
+                            <Ellipse Width="7" Height="7" Fill="{StaticResource Success}"
                                      VerticalAlignment="Center"/>
                             <TextBlock Text="Live" FontSize="10.5" FontWeight="SemiBold"
-                                       Foreground="{StaticResource AccentHover}"
+                                       Foreground="{StaticResource Accent}"
                                        Margin="5,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,2,0"
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,6,0"
                             VerticalAlignment="Center"
                             shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button Content="&#xE897;" Style="{StaticResource CaptionButton}"
-                            Command="{Binding ShowHelpCommand}" ToolTip="How to use RXShade"/>
-                    <Button Content="&#xE921;" Style="{StaticResource CaptionButton}" Click="OnMinimise"/>
-                    <Button Content="&#xE8BB;" Style="{StaticResource CloseCaptionButton}" Click="OnClose"/>
+                    <!-- The help affordance is a labelled button, not a bare glyph:
+                         the icon alone gave no hint that it opens a quick start. -->
+                    <Button Style="{StaticResource GhostButton}"
+                            Command="{Binding ShowHelpCommand}"
+                            Padding="10,5" Margin="0,0,6,0"
+                            ToolTip="How to use RXShade">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE897;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       FontSize="12" VerticalAlignment="Center"/>
+                            <TextBlock Text="Help" FontSize="12" Margin="6,0,0,0"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Content="&#xE921;" Style="{StaticResource CaptionButton}" Click="OnMinimise"
+                            ToolTip="Minimise"/>
+                    <Button Content="&#xE8BB;" Style="{StaticResource CloseCaptionButton}" Click="OnClose"
+                            ToolTip="Close"/>
                 </StackPanel>
             </Grid>
 
             <!-- ============ BODY ============ -->
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="400"/>
+                    <ColumnDefinition Width="420"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -101,11 +113,12 @@
                                           DropDownOpened="OnSourceDropDownOpened"
                                           ToolTip="The Roblox client window to filter."/>
                                 <Button Grid.Column="1" Style="{StaticResource GhostButton}"
-                                        Content="&#xE72C;" FontFamily="Segoe MDL2 Assets" FontSize="13"
+                                        Content="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                        FontSize="13"
                                         Margin="6,0,0,0" Height="38" Width="42" Padding="0"
                                         Command="{Binding RefreshTargetsCommand}"
                                         IsEnabled="{Binding IsIdle}"
-                                        ToolTip="Rescan for Roblox"/>
+                                        ToolTip="Rescan for Roblox windows"/>
                             </Grid>
 
                             <Button Margin="0,14,0,0"
@@ -114,49 +127,62 @@
                                     Command="{Binding ToggleCaptureCommand}"/>
 
                             <TextBlock Text="{Binding StatusText}"
-                                       Style="{StaticResource CaptionText}"
-                                       TextWrapping="Wrap" Margin="0,10,0,0"/>
+                                       Style="{StaticResource StatusText}"
+                                       Margin="0,10,0,0"/>
                         </StackPanel>
 
-                        <ScrollViewer Grid.Row="1" Margin="0,14,0,0"
+                        <ScrollViewer Grid.Row="1" Margin="0,16,0,0"
                                       VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
                             <StackPanel>
+                                <!-- Presets as a steady two-column grid: seven chips
+                                     in a wrapped row left a ragged half-line, and
+                                     the grid is quieter to scan. -->
                                 <TextBlock Text="Presets" Style="{StaticResource SectionLabel}"/>
-                                <WrapPanel Margin="0,0,0,4">
+                                <UniformGrid Columns="2" Margin="0,0,0,2">
                                     <RadioButton Content="Crisp" GroupName="Preset" Style="{StaticResource PresetChip}"
+                                                 Margin="0,0,3,6"
                                                  ToolTip="Clean and legible. Sharpening plus AA, no colour shift — built for actually playing."
                                                  IsChecked="{Binding ActivePreset, Converter={StaticResource PresetMatch}, ConverterParameter=Crisp}"/>
                                     <RadioButton Content="Vivid" GroupName="Preset" Style="{StaticResource PresetChip}"
+                                                 Margin="3,0,0,6"
                                                  ToolTip="Punchy, saturated colours with a touch of bloom. The screenshot look."
                                                  IsChecked="{Binding ActivePreset, Converter={StaticResource PresetMatch}, ConverterParameter=Vivid}"/>
                                     <RadioButton Content="Cinematic" GroupName="Preset" Style="{StaticResource PresetChip}"
+                                                 Margin="0,0,3,6"
                                                  ToolTip="Film emulation — desaturated and contrasty, with vignette, defocus and grain."
                                                  IsChecked="{Binding ActivePreset, Converter={StaticResource PresetMatch}, ConverterParameter=Cinematic}"/>
                                     <RadioButton Content="Dreamy" GroupName="Preset" Style="{StaticResource PresetChip}"
+                                                 Margin="3,0,0,6"
                                                  ToolTip="Heavy glow and a shallow sharp centre. Soft and hazy."
                                                  IsChecked="{Binding ActivePreset, Converter={StaticResource PresetMatch}, ConverterParameter=Dreamy}"/>
                                     <RadioButton Content="Night" GroupName="Preset" Style="{StaticResource PresetChip}"
+                                                 Margin="0,0,3,6"
                                                  ToolTip="Lifts crushed shadows so dark games stay readable, without washing out the highlights."
                                                  IsChecked="{Binding ActivePreset, Converter={StaticResource PresetMatch}, ConverterParameter=Night}"/>
                                     <RadioButton Content="Water" GroupName="Preset" Style="{StaticResource PresetChip}"
+                                                 Margin="3,0,0,6"
                                                  ToolTip="Wet surfaces — glossy sheen on floor, walls and ceiling, plus a floor mirror."
                                                  IsChecked="{Binding ActivePreset, Converter={StaticResource PresetMatch}, ConverterParameter=Water}"/>
                                     <RadioButton Content="HDR" GroupName="Preset" Style="{StaticResource PresetChip}"
+                                                 Margin="0,0,3,0"
                                                  ToolTip="ACES tone mapping with strong local contrast."
                                                  IsChecked="{Binding ActivePreset, Converter={StaticResource PresetMatch}, ConverterParameter=HDR}"/>
-                                </WrapPanel>
+                                </UniformGrid>
 
-                                <Grid Margin="0,14,0,2">
+                                <Grid Margin="0,16,0,4">
                                     <TextBlock Text="Filters" Style="{StaticResource SectionLabel}" Margin="0"/>
                                     <Button Content="Reset all" Style="{StaticResource GhostButton}"
                                             HorizontalAlignment="Right" Padding="8,3" FontSize="11"
-                                            Command="{Binding ResetFiltersCommand}"/>
+                                            Margin="0,-3,0,0"
+                                            Command="{Binding ResetFiltersCommand}"
+                                            ToolTip="Switch every filter off and return to the base picture."/>
                                 </Grid>
 
-                                <!-- One repeated primitive: a settings row that tints
-                                     when its filter is on. -->
-                                <Border Background="{Binding Settings.SharpenEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,4">
+                                <!-- One repeated primitive: a filter row that reveals its
+                                     sliders only while the filter is on. Off, each row is
+                                     a single calm line, so the whole set fits on screen. -->
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.SharpenEnabled, Converter={StaticResource ActiveBg}}">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -165,29 +191,32 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="Sharpen" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Contrast-adaptive (CAS)" Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="Contrast-adaptive (CAS)" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="SharpenToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.SharpenEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <Grid Margin="0,10,0,0" IsEnabled="{Binding Settings.SharpenEnabled}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="84"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="44"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                            <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                    Value="{Binding Settings.SharpenIntensity, Mode=TwoWay}"/>
-                                            <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                       Text="{Binding Settings.SharpenIntensity, StringFormat={}{0:0}%}"/>
-                                        </Grid>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=SharpenToggle}">
+                                            <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="96"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="46"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                        Value="{Binding Settings.SharpenIntensity, Mode=TwoWay}"/>
+                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                           Text="{Binding Settings.SharpenIntensity, StringFormat={}{0:0}%}"/>
+                                            </Grid>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Background="{Binding Settings.FxaaEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,4">
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.FxaaEnabled, Converter={StaticResource ActiveBg}}">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -196,29 +225,32 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="FXAA" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Edge anti-aliasing" Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="Edge anti-aliasing" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="FxaaToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.FxaaEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <Grid Margin="0,10,0,0" IsEnabled="{Binding Settings.FxaaEnabled}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="84"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="44"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                            <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                    Value="{Binding Settings.FxaaIntensity, Mode=TwoWay}"/>
-                                            <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                       Text="{Binding Settings.FxaaIntensity, StringFormat={}{0:0}%}"/>
-                                        </Grid>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=FxaaToggle}">
+                                            <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="96"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="46"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                        Value="{Binding Settings.FxaaIntensity, Mode=TwoWay}"/>
+                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                           Text="{Binding Settings.FxaaIntensity, StringFormat={}{0:0}%}"/>
+                                            </Grid>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Background="{Binding Settings.BloomEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,4">
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.BloomEnabled, Converter={StaticResource ActiveBg}}">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -227,46 +259,49 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="Bloom" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Bright-pass glow" Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="Bright-pass glow" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="BloomToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.BloomEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <StackPanel IsEnabled="{Binding Settings.BloomEnabled}">
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.BloomIntensity, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.BloomIntensity, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Threshold" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.BloomThreshold, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.BloomThreshold, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                        </StackPanel>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=BloomToggle}">
+                                            <StackPanel>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.BloomIntensity, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.BloomIntensity, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Threshold" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.BloomThreshold, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.BloomThreshold, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Background="{Binding Settings.ReflectionEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,4">
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.ReflectionEnabled, Converter={StaticResource ActiveBg}}">
                                     <Border.ToolTip>
                                         <TextBlock>
-                                            <Run FontWeight="SemiBold" Foreground="#EDF1F6">Set Horizon first.</Run>
+                                            <Run FontWeight="SemiBold" Foreground="#F1F5FA">Set Horizon first.</Run>
                                             <LineBreak/>
                                             Horizon is where objects meet the floor. Drag it until it sits on the
                                             ground in your game and reflections line up under each object. Set it
@@ -286,101 +321,101 @@
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="Wet reflection" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                    <Border Background="{StaticResource BgHover}" CornerRadius="4"
-                                                            Padding="5,1" Margin="7,0,0,0" VerticalAlignment="Center">
-                                                        <TextBlock Text="Approx" FontSize="9" FontWeight="SemiBold"
-                                                                   Foreground="{StaticResource TextSecondary}"/>
+                                                    <Border Style="{StaticResource TagChip}">
+                                                        <TextBlock Text="Approx" Style="{StaticResource TagChipText}"/>
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBlock Text="Sheen, shine and a floor mirror"
-                                                           Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="Sheen, shine and a floor mirror" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="ReflectionToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.ReflectionEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <StackPanel IsEnabled="{Binding Settings.ReflectionEnabled}">
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Wet sheen" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.ReflectionSheen, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.ReflectionSheen, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Floor mirror" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.ReflectionIntensity, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.ReflectionIntensity, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Horizon" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.ReflectionHorizon, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.ReflectionHorizon, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Shine" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.ReflectionShine, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.ReflectionShine, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Ripple" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.ReflectionWave, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.ReflectionWave, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Sharpness" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.ReflectionSharpness, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.ReflectionSharpness, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                        </StackPanel>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=ReflectionToggle}">
+                                            <StackPanel>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Wet sheen" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.ReflectionSheen, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.ReflectionSheen, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Floor mirror" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.ReflectionIntensity, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.ReflectionIntensity, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Horizon" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.ReflectionHorizon, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.ReflectionHorizon, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Shine" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.ReflectionShine, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.ReflectionShine, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Ripple" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.ReflectionWave, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.ReflectionWave, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Sharpness" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.ReflectionSharpness, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.ReflectionSharpness, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Background="{Binding Settings.FocusEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,4">
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.FocusEnabled, Converter={StaticResource ActiveBg}}">
                                     <Border.ToolTip>
                                         <TextBlock>
-                                            <Run FontWeight="SemiBold" Foreground="#EDF1F6">Blurs by distance from screen centre, not scene depth.</Run>
+                                            <Run FontWeight="SemiBold" Foreground="#F1F5FA">Blurs by distance from screen centre, not scene depth.</Run>
                                             <LineBreak/>
                                             True depth of field needs the depth buffer, which a capture-only tool
                                             cannot see. In third-person play the character sits near the middle, so
@@ -396,50 +431,50 @@
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="Focus" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                    <Border Background="{StaticResource BgHover}" CornerRadius="4"
-                                                            Padding="5,1" Margin="7,0,0,0" VerticalAlignment="Center">
-                                                        <TextBlock Text="Approx" FontSize="9" FontWeight="SemiBold"
-                                                                   Foreground="{StaticResource TextSecondary}"/>
+                                                    <Border Style="{StaticResource TagChip}">
+                                                        <TextBlock Text="Approx" Style="{StaticResource TagChipText}"/>
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBlock Text="Cinematic edge defocus"
-                                                           Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="Cinematic edge defocus" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="FocusToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.FocusEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <StackPanel IsEnabled="{Binding Settings.FocusEnabled}">
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Strength" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.FocusStrength, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.FocusStrength, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Sharp area" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.FocusRadius, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.FocusRadius, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                        </StackPanel>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=FocusToggle}">
+                                            <StackPanel>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Strength" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.FocusStrength, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.FocusStrength, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Sharp area" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.FocusRadius, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.FocusRadius, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Background="{Binding Settings.HdrEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,4">
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.HdrEnabled, Converter={StaticResource ActiveBg}}">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -448,80 +483,82 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="HDR" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="ACES tone mapping and local contrast"
-                                                           Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="ACES tone mapping and local contrast" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="HdrToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.HdrEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <StackPanel IsEnabled="{Binding Settings.HdrEnabled}">
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Exposure" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.HdrExposure, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.HdrExposure, StringFormat={}{0:0}}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Punch" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.HdrPunch, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.HdrPunch, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Highlights" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.HdrHighlights, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.HdrHighlights, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Shadows" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.HdrShadows, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.HdrShadows, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Vibrance" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.HdrVibrance, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.HdrVibrance, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                        </StackPanel>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=HdrToggle}">
+                                            <StackPanel>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Exposure" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.HdrExposure, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.HdrExposure, StringFormat={}{0:0}}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Punch" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.HdrPunch, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.HdrPunch, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Highlights" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.HdrHighlights, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.HdrHighlights, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Shadows" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.HdrShadows, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.HdrShadows, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Vibrance" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.HdrVibrance, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.HdrVibrance, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Background="{Binding Settings.ColorGradeEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,4">
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.ColorGradeEnabled, Converter={StaticResource ActiveBg}}">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -530,68 +567,70 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="Colour grading" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Saturation, contrast, temperature, vignette"
-                                                           Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="Saturation, contrast, temperature, vignette" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="ColorGradeToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.ColorGradeEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <StackPanel IsEnabled="{Binding Settings.ColorGradeEnabled}">
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Saturation" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.Saturation, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.Saturation, StringFormat={}{0:0}}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Contrast" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.Contrast, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.Contrast, StringFormat={}{0:0}}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Temperature" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.Temperature, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.Temperature, StringFormat={}{0:0}}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Vignette" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.Vignette, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.Vignette, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                        </StackPanel>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=ColorGradeToggle}">
+                                            <StackPanel>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Saturation" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.Saturation, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.Saturation, StringFormat={}{0:0}}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Contrast" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.Contrast, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.Contrast, StringFormat={}{0:0}}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Temperature" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.Temperature, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.Temperature, StringFormat={}{0:0}}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Vignette" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.Vignette, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.Vignette, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Background="{Binding Settings.ChromaticEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,4">
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.ChromaticEnabled, Converter={StaticResource ActiveBg}}">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -600,30 +639,33 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="Chromatic aberration" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Subtle lens colour fringing"
-                                                           Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="Subtle lens colour fringing" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="ChromaticToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.ChromaticEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <Grid Margin="0,10,0,0" IsEnabled="{Binding Settings.ChromaticEnabled}">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="84"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="44"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                            <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                    Value="{Binding Settings.ChromaticIntensity, Mode=TwoWay}"/>
-                                            <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                       Text="{Binding Settings.ChromaticIntensity, StringFormat={}{0:0}%}"/>
-                                        </Grid>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=ChromaticToggle}">
+                                            <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="96"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="46"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                        Value="{Binding Settings.ChromaticIntensity, Mode=TwoWay}"/>
+                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                           Text="{Binding Settings.ChromaticIntensity, StringFormat={}{0:0}%}"/>
+                                            </Grid>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Background="{Binding Settings.GrainEnabled, Converter={StaticResource ActiveBg}}"
-                                        CornerRadius="6" Padding="11,11" Margin="0,0,0,8">
+                                <Border Style="{StaticResource FilterRow}"
+                                        Background="{Binding Settings.GrainEnabled, Converter={StaticResource ActiveBg}}"
+                                        Margin="0,0,0,10">
                                     <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -632,39 +674,41 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel>
                                                 <TextBlock Text="Film grain" Style="{StaticResource LabelText}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="Animated, weighted to mid-tones"
-                                                           Style="{StaticResource CaptionText}" FontSize="11" Margin="0,1,0,0"/>
+                                                <TextBlock Text="Animated, weighted to mid-tones" Style="{StaticResource RowCaption}"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource ToggleSwitch}"
+                                            <ToggleButton x:Name="GrainToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}"
                                                           VerticalAlignment="Center"
                                                           IsChecked="{Binding Settings.GrainEnabled, Mode=TwoWay}"/>
                                         </Grid>
-                                        <StackPanel IsEnabled="{Binding Settings.GrainEnabled}">
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.GrainIntensity, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.GrainIntensity, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                            <Grid Margin="0,8,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="84"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="44"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="Coarseness" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
-                                                <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
-                                                        Value="{Binding Settings.GrainCoarseness, Mode=TwoWay}"/>
-                                                <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
-                                                           Text="{Binding Settings.GrainCoarseness, StringFormat={}{0:0}%}"/>
-                                            </Grid>
-                                        </StackPanel>
+                                        <Border Style="{StaticResource FilterParameters}"
+                                                IsEnabled="{Binding IsChecked, ElementName=GrainToggle}">
+                                            <StackPanel>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Intensity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.GrainIntensity, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.GrainIntensity, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                                <Grid Style="{StaticResource FieldRow}" Margin="0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="96"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="46"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Coarseness" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                                    <Slider Grid.Column="1" Style="{StaticResource FilterSlider}"
+                                                            Value="{Binding Settings.GrainCoarseness, Mode=TwoWay}"/>
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource ValueText}"
+                                                               Text="{Binding Settings.GrainCoarseness, StringFormat={}{0:0}%}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -679,14 +723,23 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Background="#FF101823" Margin="16,16,16,0"
-                            BorderBrush="{StaticResource BorderSoft}" BorderThickness="1" CornerRadius="8">
+                    <Border Grid.Row="0" Background="{StaticResource BgPreview}" Margin="16,16,16,0"
+                            BorderBrush="{StaticResource BorderStrong}" BorderThickness="1" CornerRadius="8">
                         <Grid>
-                            <TextBlock Text="Start to see the filtered feed"
-                                       Style="{StaticResource CaptionText}"
-                                       Foreground="#FF7C8DA6"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Visibility="{Binding IsIdle, Converter={StaticResource BoolToVis}}"/>
+                            <!-- Idle state says what will happen, not just that nothing
+                                 has: the old line read as an error message. -->
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        MaxWidth="300"
+                                        Visibility="{Binding IsIdle, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="&#xE7F4;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="22" Foreground="#FF5C6E85"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Text="Pick the Roblox window, then press Start."
+                                           Style="{StaticResource CaptionText}"
+                                           Foreground="#FF9DACBF" FontSize="12"
+                                           TextAlignment="Center" TextWrapping="Wrap"
+                                           LineHeight="18" Margin="0,10,0,0"/>
+                            </StackPanel>
                             <views:D3DHost x:Name="ThumbnailHost"
                                            Margin="1"
                                            Visibility="{Binding IsRunning, Converter={StaticResource BoolToVis}}"/>
@@ -715,6 +768,9 @@
             </Grid>
 
             <!-- ============ FOOTER ============ -->
+            <!-- The readout is split into labelled fields instead of one run-on
+                 string of separators, so a number can be found without reading
+                 the whole line. -->
             <Border Grid.Row="2" Background="{StaticResource BgSurface}"
                     BorderBrush="{StaticResource BorderSoft}" BorderThickness="0,1,0,0"
                     Padding="16,0">
@@ -735,14 +791,18 @@
             </Border>
 
             <!-- ============ WELCOME / HELP ============
-                 Plain prose, no numbered steps and no badges. -->
-            <Border Grid.Row="1" Grid.RowSpan="2" Background="#D9EDF1F6"
+                 A real scrim, not a translucent wash: the panel on top is the only
+                 thing in focus, and the controls behind it stop competing. -->
+            <Border Grid.Row="1" Grid.RowSpan="2" Background="#8C16202C"
                     Visibility="{Binding IsOnboardingOpen, Converter={StaticResource BoolToVis}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Border Background="{StaticResource BgSurface}"
                             BorderBrush="{StaticResource BorderStrong}" BorderThickness="1"
                             CornerRadius="10" VerticalAlignment="Center"
-                            Margin="40,28" Padding="28,24" MaxWidth="560">
+                            Margin="40,28" Padding="28,24" MaxWidth="580">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Opacity="0.3" Color="#FF0B121B"/>
+                        </Border.Effect>
                         <StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="Assets/RXShade-Logo.png" Width="44" Height="44"
@@ -765,7 +825,7 @@
 
                             <TextBlock Style="{StaticResource LabelText}" FontSize="13"
                                        TextWrapping="Wrap" LineHeight="21" Margin="0,12,0,0"
-                                       Text="Adjust the individual filters or pick a preset. Every filter has its own switch, so the fast way to work is to start from a preset and tune from there."/>
+                                       Text="Adjust the individual filters or pick a preset. Each filter has its own switch, and its sliders appear underneath while it is on — so start from a preset, then open only the filters you want to tune."/>
 
                             <Border Background="{StaticResource BgSurfaceAlt}" CornerRadius="8"
                                     BorderBrush="{StaticResource BorderSoft}" BorderThickness="1"

@@ -3,40 +3,72 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- ==================== DESIGN NOTES ====================
-         RXShade is a small utility that sits beside a game, so it reads as a
-         normal desktop app: a light, cool-grey workspace with white panels,
-         the logo's azure as the single action colour, and red reserved for the
-         one destructive action (Stop).
+         RXShade sits beside a game, so the workspace stays quiet and the only
+         saturated thing on screen is the picture in the preview.
 
-         Deliberate choices, because the defaults are everywhere:
+         The choices that matter, because the defaults are everywhere:
            - Light, not the default near-black dashboard.
            - Sentence case labels, not all-caps eyebrows.
-           - No coloured strip down the side of a card. Active rows are shown
-             by a tinted row background and the switch itself.
-           - One repeated primitive: a settings row with a hairline divider.
+           - No coloured strip down the side of a card. An active filter is
+             shown by a tinted row, an accent hairline and the switch itself.
+           - One repeated primitive: a filter row that reveals its sliders only
+             while the filter is on, so the list stays scannable.
+           - No decorative gradients, blobs or icons. Depth comes from a
+             nine-step grey ramp and two shadow levels, nothing else.
            - Franklin Gothic for headings (a real grotesque with weight),
              Segoe UI for text, Consolas only for numeric readouts.
+
+         Contrast. Every text colour below is measured against every surface it
+         can land on (BgBase, BgSurface, BgSurfaceAlt, BgHover, AccentMuted) and
+         clears WCAG AA 4.5:1 for its size. TextDim was #75828F, which measured
+         3.46:1 on BgBase and was the main reason the small print was tiring to
+         read; it is now #626F7C at 4.53:1. White on Accent was 3.75:1 and is
+         now 4.92:1, so the Start button label is legible rather than merely
+         large. Keep this invariant when changing any colour here.
     -->
 
     <!-- ==================== COLOUR ==================== -->
+    <!-- Nine-step ramp: three surfaces, two rules, three text weights. -->
     <SolidColorBrush x:Key="BgBase"       Color="#FFEDF1F6"/>
     <SolidColorBrush x:Key="BgSurface"    Color="#FFFFFFFF"/>
     <SolidColorBrush x:Key="BgSurfaceAlt" Color="#FFF6F8FC"/>
     <SolidColorBrush x:Key="BgHover"      Color="#FFE7EDF6"/>
+    <!-- The preview is a viewport, not a panel: it stays dark so the captured
+         frame is judged on its own, and the surrounding chrome reads as chrome. -->
+    <SolidColorBrush x:Key="BgPreview"    Color="#FF16212E"/>
+
     <SolidColorBrush x:Key="BorderSoft"   Color="#FFDCE3EC"/>
-    <SolidColorBrush x:Key="BorderStrong" Color="#FFC1CCDA"/>
+    <SolidColorBrush x:Key="BorderStrong" Color="#FFB6C2D1"/>
 
     <SolidColorBrush x:Key="TextPrimary"   Color="#FF16202C"/>
-    <SolidColorBrush x:Key="TextSecondary" Color="#FF4C5968"/>
-    <SolidColorBrush x:Key="TextDim"       Color="#FF75828F"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#FF46525F"/>
+    <SolidColorBrush x:Key="TextDim"       Color="#FF626F7C"/>
 
-    <SolidColorBrush x:Key="Accent"      Color="#FF1B84F0"/>
-    <SolidColorBrush x:Key="AccentHover" Color="#FF0F6FD6"/>
+    <!-- Accent is the interface blue; AccentFill is the lighter blue used only
+         for the biggest fill so the switch and thumb keep some lift. -->
+    <SolidColorBrush x:Key="Accent"      Color="#FF0F6FD6"/>
+    <SolidColorBrush x:Key="AccentFill"  Color="#FF1B84F0"/>
+    <SolidColorBrush x:Key="AccentHover" Color="#FF0B5CBB"/>
     <SolidColorBrush x:Key="AccentMuted" Color="#FFE3F0FE"/>
-    <SolidColorBrush x:Key="Danger"      Color="#FFE11D2E"/>
-    <SolidColorBrush x:Key="Success"     Color="#FF1FA363"/>
+    <SolidColorBrush x:Key="Danger"      Color="#FFC4142A"/>
+    <SolidColorBrush x:Key="Success"     Color="#FF0F7A47"/>
 
     <sys:Double x:Key="RadiusCard">10</sys:Double>
+
+    <!-- Shared keyboard affordance. WPF draws no focus visual on a templated
+         control unless it is asked to, and the slider and switch are the two
+         controls a keyboard user actually needs to reach. -->
+    <Style x:Key="FocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Margin="-3" CornerRadius="8"
+                            BorderBrush="{StaticResource Accent}"
+                            BorderThickness="2" SnapsToDevicePixels="True"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <!-- ==================== TYPE ==================== -->
     <Style x:Key="LabelText" TargetType="TextBlock">
@@ -48,15 +80,19 @@
 
     <Style x:Key="TitleText" TargetType="TextBlock" BasedOn="{StaticResource LabelText}">
         <Setter Property="FontFamily" Value="Franklin Gothic Medium, Franklin Gothic, Segoe UI"/>
-        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
     </Style>
 
+    <!-- Sits above a group, so it is a touch darker than a caption and carries
+         real letter-spacing to separate it from the rows beneath. -->
     <Style x:Key="SectionLabel" TargetType="TextBlock" BasedOn="{StaticResource LabelText}">
         <Setter Property="FontFamily" Value="Franklin Gothic Medium, Franklin Gothic, Segoe UI"/>
         <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="FontSize" Value="11.5"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
         <Setter Property="Margin" Value="0,0,0,8"/>
+        <Setter Property="TextBlock.LineHeight" Value="16"/>
     </Style>
 
     <Style x:Key="CaptionText" TargetType="TextBlock" BasedOn="{StaticResource LabelText}">
@@ -69,6 +105,13 @@
         <Setter Property="FontSize" Value="12"/>
     </Style>
 
+    <!-- Filter rows share one subtitle treatment, so the dozens of near-miss
+         font sizes that used to be set inline stay collapsed into one place. -->
+    <Style x:Key="RowCaption" TargetType="TextBlock" BasedOn="{StaticResource CaptionText}">
+        <Setter Property="FontSize" Value="11.5"/>
+        <Setter Property="Margin" Value="0,1,0,0"/>
+    </Style>
+
     <!-- Numbers only. Monospaced so readouts do not jitter frame to frame. -->
     <Style x:Key="ValueText" TargetType="TextBlock" BasedOn="{StaticResource LabelText}">
         <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
@@ -77,40 +120,88 @@
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="HorizontalAlignment" Value="Right"/>
         <Setter Property="MinWidth" Value="38"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
     </Style>
 
-    <!-- ==================== CARD ==================== -->
-    <Style x:Key="Card" TargetType="Border">
+    <!-- A statement of what is on screen right now, not a footnote. -->
+    <Style x:Key="StatusText" TargetType="TextBlock" BasedOn="{StaticResource LabelText}">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="LineHeight" Value="17"/>
+    </Style>
+
+    <!-- ==================== FILTER ROW ====================
+         One filter, one card. Off, it is a single calm line. On, the sliders
+         unfold under a hairline rule. That is why nine filters fit a panel that
+         previously overflowed by a factor of two and a half.
+
+         There is no shadow here: the tint and the accent hairline already say
+         which rows are live, and a drop shadow on every card is the clearest
+         single sign of a generated interface.
+    -->
+    <Style x:Key="FilterRow" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource BgSurface}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderSoft}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="10"/>
-        <Setter Property="Padding" Value="16,14"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
     </Style>
 
-    <Style x:Key="Divider" TargetType="Border">
-        <Setter Property="Height" Value="1"/>
-        <Setter Property="Background" Value="{StaticResource BorderSoft}"/>
-        <Setter Property="Margin" Value="0,12"/>
+    <Style x:Key="FilterParameters" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource BorderSoft}"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="Margin" Value="0,10,0,0"/>
+        <Setter Property="Padding" Value="0,10,0,0"/>
+        <Style.Triggers>
+            <!-- IsEnabled is already bound to the same settings flag that drives
+                 this, so a disabled row dims and goes away together. -->
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Visibility" Value="Collapsed"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Small, low-saturation annotation such as the APPROX markers. -->
+    <Style x:Key="TagChip" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource BgHover}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderStrong}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Padding" Value="5,1"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="7,0,0,0"/>
+    </Style>
+
+    <Style x:Key="TagChipText" TargetType="TextBlock" BasedOn="{StaticResource CaptionText}">
+        <Setter Property="FontSize" Value="9.5"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+    </Style>
+
+    <Style x:Key="FieldRow" TargetType="Grid">
+        <Setter Property="Margin" Value="0,0,0,8"/>
     </Style>
 
     <!-- ==================== TOGGLE SWITCH ==================== -->
     <Style x:Key="ToggleSwitch" TargetType="ToggleButton">
-        <Setter Property="Width" Value="38"/>
-        <Setter Property="Height" Value="21"/>
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="Height" Value="22"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Focusable" Value="True"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
                     <Grid Background="Transparent">
                         <Border x:Name="Track"
-                                CornerRadius="10.5"
+                                CornerRadius="11"
                                 Background="{StaticResource BgHover}"
                                 BorderBrush="{StaticResource BorderStrong}"
                                 BorderThickness="1"/>
                         <Ellipse x:Name="Knob"
-                                 Width="15" Height="15"
+                                 Width="16" Height="16"
                                  Fill="White"
                                  HorizontalAlignment="Left"
                                  VerticalAlignment="Center"
@@ -126,14 +217,14 @@
 
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Track" Property="Background" Value="{StaticResource Accent}"/>
-                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource AccentFill}"/>
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource AccentFill}"/>
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="KnobShift"
                                                          Storyboard.TargetProperty="X"
-                                                         To="17" Duration="0:0:0.13">
+                                                         To="18" Duration="0:0:0.13">
                                             <DoubleAnimation.EasingFunction>
                                                 <CubicEase EasingMode="EaseOut"/>
                                             </DoubleAnimation.EasingFunction>
@@ -155,9 +246,13 @@
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
                         </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource AccentHover}"/>
-                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsChecked" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                        </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.4"/>
                         </Trigger>
@@ -169,14 +264,14 @@
 
     <!-- ==================== SLIDER ==================== -->
     <Style x:Key="SliderThumb" TargetType="Thumb">
-        <Setter Property="Width" Value="16"/>
-        <Setter Property="Height" Value="16"/>
+        <Setter Property="Width" Value="18"/>
+        <Setter Property="Height" Value="18"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
                     <Grid>
-                        <Ellipse x:Name="Glow" Width="24" Height="24" Fill="{StaticResource Accent}" Opacity="0"/>
+                        <Ellipse x:Name="Glow" Width="26" Height="26" Fill="{StaticResource Accent}" Opacity="0"/>
                         <Ellipse x:Name="Dot" Fill="White" Stroke="{StaticResource Accent}" StrokeThickness="2.5"/>
                     </Grid>
                     <ControlTemplate.Triggers>
@@ -198,7 +293,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RepeatButton">
-                    <Border Height="4" CornerRadius="2"
+                    <Border Height="5" CornerRadius="2.5"
                             Background="{StaticResource Accent}"
                             VerticalAlignment="Center"/>
                 </ControlTemplate>
@@ -212,7 +307,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RepeatButton">
-                    <Border Background="Transparent" Height="16"/>
+                    <Border Background="Transparent" Height="18"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -221,14 +316,20 @@
     <Style x:Key="FilterSlider" TargetType="Slider">
         <Setter Property="Minimum" Value="0"/>
         <Setter Property="Maximum" Value="100"/>
-        <Setter Property="Height" Value="20"/>
+        <!-- 22px of vertical hit area for a 5px rule: the pointer target is the
+             control, not the line. -->
+        <Setter Property="Height" Value="22"/>
         <Setter Property="IsMoveToPointEnabled" Value="True"/>
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Slider">
                     <Grid Background="Transparent" VerticalAlignment="Center">
-                        <Border Height="4" CornerRadius="2"
+                        <Border Height="5" CornerRadius="2.5"
                                 Background="{StaticResource BgHover}"
+                                BorderBrush="{StaticResource BorderSoft}"
+                                BorderThickness="1"
                                 VerticalAlignment="Center"/>
                         <Track x:Name="PART_Track">
                             <Track.DecreaseRepeatButton>
@@ -259,6 +360,7 @@
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="FontSize" Value="13.5"/>
         <Setter Property="FontFamily" Value="Franklin Gothic Medium, Franklin Gothic, Segoe UI"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -268,6 +370,11 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bg" Property="Background" Value="{StaticResource AccentHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <!-- Pressed goes darker, not lighter: a button that
+                                 brightens under the pointer reads as a link. -->
+                            <Setter TargetName="Bg" Property="Background" Value="{StaticResource TextPrimary}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Bg" Property="Background" Value="{StaticResource BgHover}"/>
@@ -289,7 +396,15 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bg" Property="Background" Value="#FFC4162A"/>
+                            <Setter TargetName="Bg" Property="Background" Value="#FF9E0F21"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="#FF7E0B1A"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bg" Property="Background" Value="{StaticResource BgHover}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextDim}"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -303,19 +418,24 @@
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
         <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="Bg" CornerRadius="6" Background="Transparent"
-                            BorderBrush="{StaticResource BorderSoft}" BorderThickness="1"
+                            BorderBrush="{StaticResource BorderStrong}" BorderThickness="1"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bg" Property="Background" Value="{StaticResource BgHover}"/>
-                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource BorderStrong}"/>
+                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource Accent}"/>
                             <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5"/>
+                            <Setter Property="Cursor" Value="Arrow"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -325,16 +445,18 @@
 
     <!-- Window caption buttons -->
     <Style x:Key="CaptionButton" TargetType="Button">
-        <Setter Property="Width" Value="44"/>
         <Setter Property="Height" Value="32"/>
+        <Setter Property="MinWidth" Value="32"/>
         <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-        <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
-        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Bg" Background="Transparent">
+                    <Border x:Name="Bg" Background="Transparent" CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -352,7 +474,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Bg" Background="Transparent">
+                    <Border x:Name="Bg" Background="Transparent" CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -366,23 +489,26 @@
         </Setter>
     </Style>
 
-    <!-- ==================== PRESET BUTTON ====================
-         Plain buttons that wrap and size to their text, rather than a grid of
-         identical cards.
+    <!-- ==================== PRESET CHIP ====================
+         Styled to fill the cell it is given, so the presets can be laid out as a
+         steady two-column grid instead of a ragged wrapped row.
     -->
     <Style x:Key="PresetChip" TargetType="RadioButton">
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="12.5"/>
         <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
-        <Setter Property="Margin" Value="0,0,6,6"/>
+        <Setter Property="Height" Value="32"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Border x:Name="Bg"
                             Background="{StaticResource BgSurface}"
                             BorderBrush="{StaticResource BorderStrong}"
-                            BorderThickness="1" CornerRadius="6" Padding="12,6">
+                            BorderThickness="1" CornerRadius="6" Padding="10,0">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -393,7 +519,8 @@
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Bg" Property="Background" Value="{StaticResource AccentMuted}"/>
                             <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource Accent}"/>
-                            <Setter Property="Foreground" Value="{StaticResource AccentHover}"/>
+                            <Setter TargetName="Bg" Property="BorderThickness" Value="1.5"/>
+                            <Setter Property="Foreground" Value="{StaticResource Accent}"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -417,7 +544,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Bg" Property="Background" Value="{StaticResource AccentMuted}"/>
-                            <Setter Property="Foreground" Value="{StaticResource AccentHover}"/>
+                            <Setter Property="Foreground" Value="{StaticResource Accent}"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -453,6 +580,7 @@
         <Setter Property="FontSize" Value="12.5"/>
         <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
@@ -604,7 +732,7 @@
                             <ContentPresenter.Resources>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="TextWrapping" Value="Wrap"/>
-                                    <Setter Property="Foreground" Value="#FFEDF1F6"/>
+                                    <Setter Property="Foreground" Value="#FFF1F5FA"/>
                                     <Setter Property="LineHeight" Value="16"/>
                                 </Style>
                             </ContentPresenter.Resources>

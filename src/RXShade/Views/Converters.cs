@@ -5,37 +5,13 @@ using System.Windows.Media;
 namespace RXShade.Views;
 
 /// <summary>
-/// Lights up a filter card's border while that filter is enabled, so which
-/// effects are active is readable at a glance instead of requiring the user to
-/// scan every toggle.
-///
-/// The colours mirror Accent / BorderSoft in Theme.xaml. Kept here rather than
-/// as eight per-card DataTriggers in XAML, which would be ~80 lines of markup
-/// for the same result.
-/// </summary>
-public sealed class ActiveBorderConverter : IValueConverter
-{
-    private static readonly SolidColorBrush Active = CreateFrozen(0x1B, 0x84, 0xF0);
-    private static readonly SolidColorBrush Inactive = CreateFrozen(0xDC, 0xE3, 0xEC);
-
-    private static SolidColorBrush CreateFrozen(byte r, byte g, byte b)
-    {
-        var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
-        brush.Freeze();
-        return brush;
-    }
-
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => value is true ? Active : Inactive;
-
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => Binding.DoNothing;
-}
-
-/// <summary>
 /// Tints the background of an enabled settings row. Deliberately a whole-row
 /// wash rather than a coloured strip down one edge, which is the single most
 /// recognisable generated-interface tell.
+///
+/// The colours mirror AccentMuted / BorderSoft in Theme.xaml. Kept here rather
+/// than as nine per-card DataTriggers in XAML, which would be ~80 lines of
+/// markup for the same result.
 /// </summary>
 public sealed class ActiveBackgroundConverter : IValueConverter
 {

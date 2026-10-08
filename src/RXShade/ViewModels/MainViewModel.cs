@@ -63,10 +63,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Preferences = AppPreferences.Load();
 
         var version = Assembly.GetExecutingAssembly().GetName().Version;
-        // First public release, shipped as a beta. The assembly version stays
-        // strictly numeric (1.0.0.0); the label is presentation only.
-        string numeric = version is null ? "1.0.0" : $"{version.Major}.{version.Minor}.{version.Build}";
-        VersionText = $"{numeric} beta";
+        // The assembly version stays strictly numeric (1.0.1.0); the beta label
+        // is presentation only.
+        string numeric = version is null ? "1.0.1" : $"{version.Major}.{version.Minor}.{version.Build}";
+        VersionText = $"{numeric} Beta";
 
         // First launch: the welcome panel is the whole point of the screen.
         _isOnboardingOpen = !Preferences.HasCompletedOnboarding;

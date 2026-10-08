@@ -12,8 +12,8 @@
 ; ---------------------------------------------------------------------------
 
 #define MyAppName "RXShade"
-#define MyAppVersion "1.0.0"
-#define MyAppVersionLabel "1.0.0 beta"
+#define MyAppVersion "1.0.1"
+#define MyAppVersionLabel "1.0.1 Beta"
 #define MyAppPublisher "CortexDev"
 #define MyAppExeName "RXShade.exe"
 #define MyAppId "{{B7C4E2A1-9F3D-4E7A-8C21-5D6F0A9B3E74}"
