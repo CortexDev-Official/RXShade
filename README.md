@@ -2,8 +2,6 @@
 
 Real-time visual filters for the Roblox client, inspired by NVIDIA Freestyle.
 
-**Developer:** CortexDev · **Version:** 1.0.1 Beta · **License:** MIT
-
 ## What it does
 
 RXShade captures the Roblox window, applies GPU shaders, and displays the result in a click-through overlay. It uses Windows screen capture, similar to OBS and Xbox Game Bar.
@@ -20,7 +18,7 @@ Some effects are approximations. Real reflections need scene depth data, which a
 
 ## Install
 
-Run `RXShadeSetup.exe`. It installs for your Windows user and does not need administrator rights or a separate .NET runtime. You can uninstall it from **Settings → Apps → Installed apps**.
+Run `RXShade.exe`. It installs for your Windows user and does not need administrator rights or a separate .NET runtime. You can uninstall it from **Settings → Apps → Installed apps**.
 
 ## How to use
 
@@ -122,21 +120,8 @@ This writes PNGs for different filter combinations and is useful for checking vi
 - **Using integrated graphics:** RXShade uses the GPU connected to your display. If your dedicated GPU says no monitor is attached in the self-test, your display cable may be plugged into the motherboard instead.
 - **Low or capped FPS:** RXShade cannot render frames the game does not produce. Check the footer's rendered/delivered FPS and run the self-test. In Roblox, set **Frame Rate Cap** to **Uncapped** or at least your monitor's refresh rate. Advanced users can also set `DFIntTaskSchedulerTargetFps` in the Roblox client's `ClientAppSettings.json`; RXShade does not edit Roblox files.
 
-## Project structure
 
-```text
-src/RXShade/
-  Capture/      Window capture
-  Graphics/     D3D11 and filter pipeline
-  Interop/      Windows interop
-  Models/       Settings and presets
-  Shaders/      HLSL filters
-  ViewModels/   MainViewModel
-  Views/        Overlay and UI
-installer/      Installer script
- tools/         Icon generation script
-```
 
 Released under the MIT License. See `LICENSE`.
 
-Built by **CortexDev**.
+Built by **[CortexDev](https://cortexdev.online)**.
