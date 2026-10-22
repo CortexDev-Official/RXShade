@@ -12,8 +12,8 @@
 ; ---------------------------------------------------------------------------
 
 #define MyAppName "RXShade"
-#define MyAppVersion "1.0.1"
-#define MyAppVersionLabel "1.0.1 Beta"
+#define MyAppVersion "1.0.2"
+#define MyAppVersionLabel "1.0.2 Beta"
 #define MyAppPublisher "CortexDev"
 #define MyAppExeName "RXShade.exe"
 #define MyAppId "{{B7C4E2A1-9F3D-4E7A-8C21-5D6F0A9B3E74}"
@@ -56,6 +56,7 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 [Files]
 Source: "..\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\CHANGELOG.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]

@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace RXShade.Models;
 
 /// <summary>Named one-click looks. Each maps to a full set of filter values.</summary>
@@ -9,6 +11,7 @@ public enum FilterPreset
     Cinematic,
     Dreamy,
     Night,
+    Mirror,
     Water,
     HDR
 }
@@ -21,31 +24,57 @@ public enum FilterPreset
 /// exactly what is persisted. Reads happen on the render thread while writes
 /// happen on the UI thread; the values are independent doubles, so a torn read
 /// can at worst apply one stale parameter for a single frame.
+///
+/// WRITE ORDER MATTERS: every setter funnels through <see cref="Apply"/>, which
+/// is what raises <see cref="Changed"/>. Do not assign to the backing fields
+/// directly outside <see cref="RestoreState"/> and <see cref="ApplyPreset"/>,
+/// or a change will go unpersisted and the preset chip will stay lit when it no
+/// longer describes the live settings.
 /// </summary>
 public sealed class FilterSettings : ObservableObject
 {
+    /// <summary>
+    /// Raised once per user-visible change. The view model uses it to persist
+    /// settings and to drop a preset chip the moment the values no longer match
+    /// the look it names.
+    /// </summary>
+    public event Action? Changed;
+
+    /// <summary>
+    /// True while a bulk write is in progress (applying a preset or restoring
+    /// saved state). Suppresses <see cref="Changed"/> so one click cannot queue
+    /// forty saves.
+    /// </summary>
+    private bool _settling;
+
+    private void Apply<T>(ref T field, T value, string name)
+    {
+        if (!SetProperty(ref field, value, name)) return;
+        if (!_settling) Changed?.Invoke();
+    }
+
     // ---- Sharpen (CAS) -------------------------------------------------
     private bool _sharpenEnabled;
     private double _sharpenIntensity = 45;
 
-    public bool SharpenEnabled { get => _sharpenEnabled; set => SetProperty(ref _sharpenEnabled, value); }
-    public double SharpenIntensity { get => _sharpenIntensity; set => SetProperty(ref _sharpenIntensity, value); }
+    public bool SharpenEnabled { get => _sharpenEnabled; set => Apply(ref _sharpenEnabled, value, nameof(SharpenEnabled)); }
+    public double SharpenIntensity { get => _sharpenIntensity; set => Apply(ref _sharpenIntensity, value, nameof(SharpenIntensity)); }
 
     // ---- FXAA ----------------------------------------------------------
     private bool _fxaaEnabled;
     private double _fxaaIntensity = 75;
 
-    public bool FxaaEnabled { get => _fxaaEnabled; set => SetProperty(ref _fxaaEnabled, value); }
-    public double FxaaIntensity { get => _fxaaIntensity; set => SetProperty(ref _fxaaIntensity, value); }
+    public bool FxaaEnabled { get => _fxaaEnabled; set => Apply(ref _fxaaEnabled, value, nameof(FxaaEnabled)); }
+    public double FxaaIntensity { get => _fxaaIntensity; set => Apply(ref _fxaaIntensity, value, nameof(FxaaIntensity)); }
 
     // ---- Bloom ---------------------------------------------------------
     private bool _bloomEnabled;
     private double _bloomIntensity = 35;
     private double _bloomThreshold = 65;
 
-    public bool BloomEnabled { get => _bloomEnabled; set => SetProperty(ref _bloomEnabled, value); }
-    public double BloomIntensity { get => _bloomIntensity; set => SetProperty(ref _bloomIntensity, value); }
-    public double BloomThreshold { get => _bloomThreshold; set => SetProperty(ref _bloomThreshold, value); }
+    public bool BloomEnabled { get => _bloomEnabled; set => Apply(ref _bloomEnabled, value, nameof(BloomEnabled)); }
+    public double BloomIntensity { get => _bloomIntensity; set => Apply(ref _bloomIntensity, value, nameof(BloomIntensity)); }
+    public double BloomThreshold { get => _bloomThreshold; set => Apply(ref _bloomThreshold, value, nameof(BloomThreshold)); }
 
     // ---- Fake reflection (stylised, not SSR) ---------------------------
     private bool _reflectionEnabled;
@@ -70,22 +99,22 @@ public sealed class FilterSettings : ObservableObject
     // rather than just putting a mirror on the ground.
     private double _reflectionSheen = 60;
 
-    public bool ReflectionEnabled { get => _reflectionEnabled; set => SetProperty(ref _reflectionEnabled, value); }
-    public double ReflectionIntensity { get => _reflectionIntensity; set => SetProperty(ref _reflectionIntensity, value); }
-    public double ReflectionSheen { get => _reflectionSheen; set => SetProperty(ref _reflectionSheen, value); }
-    public double ReflectionHorizon { get => _reflectionHorizon; set => SetProperty(ref _reflectionHorizon, value); }
-    public double ReflectionWave { get => _reflectionWave; set => SetProperty(ref _reflectionWave, value); }
-    public double ReflectionSharpness { get => _reflectionSharpness; set => SetProperty(ref _reflectionSharpness, value); }
-    public double ReflectionShine { get => _reflectionShine; set => SetProperty(ref _reflectionShine, value); }
+    public bool ReflectionEnabled { get => _reflectionEnabled; set => Apply(ref _reflectionEnabled, value, nameof(ReflectionEnabled)); }
+    public double ReflectionIntensity { get => _reflectionIntensity; set => Apply(ref _reflectionIntensity, value, nameof(ReflectionIntensity)); }
+    public double ReflectionSheen { get => _reflectionSheen; set => Apply(ref _reflectionSheen, value, nameof(ReflectionSheen)); }
+    public double ReflectionHorizon { get => _reflectionHorizon; set => Apply(ref _reflectionHorizon, value, nameof(ReflectionHorizon)); }
+    public double ReflectionWave { get => _reflectionWave; set => Apply(ref _reflectionWave, value, nameof(ReflectionWave)); }
+    public double ReflectionSharpness { get => _reflectionSharpness; set => Apply(ref _reflectionSharpness, value, nameof(ReflectionSharpness)); }
+    public double ReflectionShine { get => _reflectionShine; set => Apply(ref _reflectionShine, value, nameof(ReflectionShine)); }
 
     // ---- Focus (radial fake depth of field) ----------------------------
     private bool _focusEnabled;
     private double _focusStrength = 50;
     private double _focusRadius = 45;
 
-    public bool FocusEnabled { get => _focusEnabled; set => SetProperty(ref _focusEnabled, value); }
-    public double FocusStrength { get => _focusStrength; set => SetProperty(ref _focusStrength, value); }
-    public double FocusRadius { get => _focusRadius; set => SetProperty(ref _focusRadius, value); }
+    public bool FocusEnabled { get => _focusEnabled; set => Apply(ref _focusEnabled, value, nameof(FocusEnabled)); }
+    public double FocusStrength { get => _focusStrength; set => Apply(ref _focusStrength, value, nameof(FocusStrength)); }
+    public double FocusRadius { get => _focusRadius; set => Apply(ref _focusRadius, value, nameof(FocusRadius)); }
 
     // ---- HDR tone mapping ----------------------------------------------
     private bool _hdrEnabled;
@@ -95,12 +124,12 @@ public sealed class FilterSettings : ObservableObject
     private double _hdrShadows = 35;    // shadow lift
     private double _hdrVibrance = 45;
 
-    public bool HdrEnabled { get => _hdrEnabled; set => SetProperty(ref _hdrEnabled, value); }
-    public double HdrExposure { get => _hdrExposure; set => SetProperty(ref _hdrExposure, value); }
-    public double HdrPunch { get => _hdrPunch; set => SetProperty(ref _hdrPunch, value); }
-    public double HdrHighlights { get => _hdrHighlights; set => SetProperty(ref _hdrHighlights, value); }
-    public double HdrShadows { get => _hdrShadows; set => SetProperty(ref _hdrShadows, value); }
-    public double HdrVibrance { get => _hdrVibrance; set => SetProperty(ref _hdrVibrance, value); }
+    public bool HdrEnabled { get => _hdrEnabled; set => Apply(ref _hdrEnabled, value, nameof(HdrEnabled)); }
+    public double HdrExposure { get => _hdrExposure; set => Apply(ref _hdrExposure, value, nameof(HdrExposure)); }
+    public double HdrPunch { get => _hdrPunch; set => Apply(ref _hdrPunch, value, nameof(HdrPunch)); }
+    public double HdrHighlights { get => _hdrHighlights; set => Apply(ref _hdrHighlights, value, nameof(HdrHighlights)); }
+    public double HdrShadows { get => _hdrShadows; set => Apply(ref _hdrShadows, value, nameof(HdrShadows)); }
+    public double HdrVibrance { get => _hdrVibrance; set => Apply(ref _hdrVibrance, value, nameof(HdrVibrance)); }
 
     // ---- Colour grading ------------------------------------------------
     private bool _colorGradeEnabled;
@@ -109,27 +138,27 @@ public sealed class FilterSettings : ObservableObject
     private double _temperature = 50;  // 50 == neutral
     private double _vignette;
 
-    public bool ColorGradeEnabled { get => _colorGradeEnabled; set => SetProperty(ref _colorGradeEnabled, value); }
-    public double Saturation { get => _saturation; set => SetProperty(ref _saturation, value); }
-    public double Contrast { get => _contrast; set => SetProperty(ref _contrast, value); }
-    public double Temperature { get => _temperature; set => SetProperty(ref _temperature, value); }
-    public double Vignette { get => _vignette; set => SetProperty(ref _vignette, value); }
+    public bool ColorGradeEnabled { get => _colorGradeEnabled; set => Apply(ref _colorGradeEnabled, value, nameof(ColorGradeEnabled)); }
+    public double Saturation { get => _saturation; set => Apply(ref _saturation, value, nameof(Saturation)); }
+    public double Contrast { get => _contrast; set => Apply(ref _contrast, value, nameof(Contrast)); }
+    public double Temperature { get => _temperature; set => Apply(ref _temperature, value, nameof(Temperature)); }
+    public double Vignette { get => _vignette; set => Apply(ref _vignette, value, nameof(Vignette)); }
 
     // ---- Chromatic aberration ------------------------------------------
     private bool _chromaticEnabled;
     private double _chromaticIntensity = 25;
 
-    public bool ChromaticEnabled { get => _chromaticEnabled; set => SetProperty(ref _chromaticEnabled, value); }
-    public double ChromaticIntensity { get => _chromaticIntensity; set => SetProperty(ref _chromaticIntensity, value); }
+    public bool ChromaticEnabled { get => _chromaticEnabled; set => Apply(ref _chromaticEnabled, value, nameof(ChromaticEnabled)); }
+    public double ChromaticIntensity { get => _chromaticIntensity; set => Apply(ref _chromaticIntensity, value, nameof(ChromaticIntensity)); }
 
     // ---- Film grain ----------------------------------------------------
     private bool _grainEnabled;
     private double _grainIntensity = 30;
     private double _grainCoarseness = 35;
 
-    public bool GrainEnabled { get => _grainEnabled; set => SetProperty(ref _grainEnabled, value); }
-    public double GrainIntensity { get => _grainIntensity; set => SetProperty(ref _grainIntensity, value); }
-    public double GrainCoarseness { get => _grainCoarseness; set => SetProperty(ref _grainCoarseness, value); }
+    public bool GrainEnabled { get => _grainEnabled; set => Apply(ref _grainEnabled, value, nameof(GrainEnabled)); }
+    public double GrainIntensity { get => _grainIntensity; set => Apply(ref _grainIntensity, value, nameof(GrainIntensity)); }
+    public double GrainCoarseness { get => _grainCoarseness; set => Apply(ref _grainCoarseness, value, nameof(GrainCoarseness)); }
 
     /// <summary>
     /// When false the pipeline short-circuits to a single blit, which is the
@@ -156,6 +185,21 @@ public sealed class FilterSettings : ObservableObject
     /// different results depending on click order.
     /// </summary>
     public void ApplyPreset(FilterPreset preset)
+    {
+        _settling = true;
+        try
+        {
+            ApplyPresetCore(preset);
+        }
+        finally
+        {
+            _settling = false;
+        }
+
+        Changed?.Invoke();
+    }
+
+    private void ApplyPresetCore(FilterPreset preset)
     {
         // Neutral baseline first.
         SharpenEnabled = false; SharpenIntensity = 45;
@@ -222,19 +266,19 @@ public sealed class FilterSettings : ObservableObject
                 Temperature = 43; Vignette = 18;
                 break;
 
-            // Shows off the mirrored band over a floor or water plane.
+            // A polished floor: a pure crisp mirror with no sheen and no ripple.
             // Values dialled in by hand in-game rather than derived from the
-            // synthetic test scene - a pure mirror with no sheen or ripple,
-            // which is what actually reads correctly in Doors' interiors.
-            case FilterPreset.Water:
+            // synthetic test scene, which is what actually reads correctly on
+            // Doors' hard interiors.
+            case FilterPreset.Mirror:
                 FxaaEnabled = true; FxaaIntensity = 65;
 
                 ReflectionEnabled = true;
                 ReflectionSheen = 0;          // mirror only; streaks off
-                ReflectionIntensity = 100;    // floor mirror at full
+                ReflectionIntensity = 100;    // mirrored band at full
                 ReflectionHorizon = 55;
                 ReflectionShine = 65;
-                ReflectionWave = 0;           // no ripple - hard floors, not water
+                ReflectionWave = 0;           // dead flat surface
                 ReflectionSharpness = 100;    // fully crisp reflection
 
                 BloomEnabled = true; BloomIntensity = 30; BloomThreshold = 40;
@@ -245,6 +289,27 @@ public sealed class FilterSettings : ObservableObject
                 HdrHighlights = 19;
                 HdrShadows = 0;
                 HdrVibrance = 37;
+                break;
+
+            // The same mirror, but moving and softened: ripple on the reflection
+            // and sheen across the surfaces, which is what separates standing
+            // water from polished stone.
+            case FilterPreset.Water:
+                FxaaEnabled = true; FxaaIntensity = 65;
+
+                ReflectionEnabled = true;
+                ReflectionSheen = 55;         // light streaked across surfaces
+                ReflectionIntensity = 85;
+                ReflectionHorizon = 55;
+                ReflectionShine = 60;
+                ReflectionWave = 58;          // visible movement in the reflection
+                ReflectionSharpness = 38;     // softened, not a hard mirror
+
+                BloomEnabled = true; BloomIntensity = 34; BloomThreshold = 44;
+
+                ColorGradeEnabled = true; Saturation = 58; Contrast = 52;
+                Temperature = 43;             // cool cast, as water tends to read
+                Vignette = 16;
                 break;
 
             // Tone-mapped, punchy and deep. The closest thing here to what a
@@ -296,6 +361,78 @@ public sealed class FilterSettings : ObservableObject
         GrainIntensity = (float)(GrainIntensity / 100.0),
         GrainCoarseness = (float)(GrainCoarseness / 100.0)
     };
+
+    // ---- Persistence ---------------------------------------------------
+    //
+    // Written as flat key=value pairs so the preferences file stays readable
+    // and hand-editable, matching the rest of AppPreferences. Values are stored
+    // in the same 0-100 range the UI shows.
+
+    private static readonly string[] ToggleNames =
+    {
+        nameof(SharpenEnabled), nameof(FxaaEnabled), nameof(BloomEnabled),
+        nameof(ReflectionEnabled), nameof(FocusEnabled), nameof(HdrEnabled),
+        nameof(ColorGradeEnabled), nameof(ChromaticEnabled), nameof(GrainEnabled)
+    };
+
+    private static readonly string[] ValueNames =
+    {
+        nameof(SharpenIntensity), nameof(FxaaIntensity),
+        nameof(BloomIntensity), nameof(BloomThreshold),
+        nameof(ReflectionIntensity), nameof(ReflectionSheen), nameof(ReflectionHorizon),
+        nameof(ReflectionWave), nameof(ReflectionSharpness), nameof(ReflectionShine),
+        nameof(FocusStrength), nameof(FocusRadius),
+        nameof(HdrExposure), nameof(HdrPunch), nameof(HdrHighlights), nameof(HdrShadows), nameof(HdrVibrance),
+        nameof(Saturation), nameof(Contrast), nameof(Temperature), nameof(Vignette),
+        nameof(ChromaticIntensity), nameof(GrainIntensity), nameof(GrainCoarseness)
+    };
+
+    public Dictionary<string, string> SaveState()
+    {
+        var state = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (string name in ToggleNames)
+            state[name] = ((bool)GetType().GetProperty(name)!.GetValue(this)!).ToString();
+
+        foreach (string name in ValueNames)
+        {
+            double value = (double)GetType().GetProperty(name)!.GetValue(this)!;
+            state[name] = value.ToString("0.###", CultureInfo.InvariantCulture);
+        }
+
+        return state;
+    }
+
+    /// <summary>
+    /// Restores a previously saved state. Unknown or unparsable keys are
+    /// ignored individually, so a file written by an older build still restores
+    /// whatever it does contain instead of being discarded wholesale.
+    /// </summary>
+    public void RestoreState(IReadOnlyDictionary<string, string> state)
+    {
+        _settling = true;
+        try
+        {
+            foreach (string name in ToggleNames)
+            {
+                if (state.TryGetValue(name, out string? raw) && bool.TryParse(raw, out bool flag))
+                    GetType().GetProperty(name)!.SetValue(this, flag);
+            }
+
+            foreach (string name in ValueNames)
+            {
+                if (!state.TryGetValue(name, out string? raw)) continue;
+                if (!double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out double value)) continue;
+                if (double.IsNaN(value) || double.IsInfinity(value)) continue;
+
+                GetType().GetProperty(name)!.SetValue(this, Math.Clamp(value, 0, 100));
+            }
+        }
+        finally
+        {
+            _settling = false;
+        }
+    }
 }
 
 /// <summary>Immutable per-frame copy of <see cref="FilterSettings"/>, all values normalised to 0..1.</summary>

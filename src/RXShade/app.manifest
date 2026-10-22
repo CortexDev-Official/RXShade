@@ -9,6 +9,24 @@
     </application>
   </compatibility>
 
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <!--
+          asInvoker: RXShade runs at the user's own privilege level and never
+          prompts for elevation.
+
+          Declared explicitly so the level is a deliberate part of the build
+          rather than an inherited default. The overlay touches only its own
+          windows and reads public window metadata, so nothing here needs
+          administrator rights - and an app that quietly requires them is an app
+          that fails to launch with no explanation.
+        -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+
   <application xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings>
       <!--

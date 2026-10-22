@@ -40,10 +40,10 @@
     <!-- Assembly/file versions must stay numeric for the CLR and the
          installer; the human-readable beta label lives in InformationalVersion
          (and is shown by the UI). -->
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
-    <InformationalVersion>1.0.1 Beta</InformationalVersion>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <InformationalVersion>1.0.2 Beta</InformationalVersion>
     <Description>Real-time GPU shader filters for the Roblox window. Capture-only overlay with no injection, no memory reads and no game files touched.</Description>
     <!--
       InvariantGlobalization must stay OFF: WPF data binding resolves a
@@ -51,7 +51,36 @@
       globalization that lookup throws before the first frame is drawn.
     -->
     <InvariantGlobalization>false</InvariantGlobalization>
-    <!-- Single-file self-contained publish -->
+    <!--
+      Single-file self-contained publish.
+
+      Both flags below must stay TRUE. A self-contained WPF app cannot be one
+      file without them: wpfgfx_cor3.dll, PresentationNative_cor3.dll,
+      D3DCompiler_47_cor3.dll and vcruntime140_cor3.dll are native and cannot be
+      loaded out of the bundle in place. Setting either to false emits those
+      DLLs as loose files next to the executable (verified: the app then throws
+      DllNotFoundException from HwndSubclass.HookWindowProc when launched on its
+      own, so it is no longer a single file and would break for anyone who
+      downloads only the .exe).
+
+      The cost of keeping them true is that the host unpacks those native
+      libraries into %TEMP%\.net\RXShade\<hash>\ before Main runs. If that
+      directory cannot be created, the process dies with
+
+          Failure processing application bundle.
+          Failed to create directory [...] for extracting bundled files.
+
+      and never reaches our code, so there is nothing to log and no dialog to
+      show. Running as administrator appears to fix it only because the elevated
+      account gets a different, empty %TEMP%.
+
+      The executable deliberately does NOT request elevation (see app.manifest),
+      so this is not something the app is asking for. If a user hits it, the fix
+      is on the machine: allow writes to %TEMP%, or install through
+      RXShadeSetup.exe, which lays the app down as a folder and never extracts
+      anything. Do not "fix" it by turning these flags off - that trades a
+      startup failure on locked-down machines for a broken download everywhere.
+    -->
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>

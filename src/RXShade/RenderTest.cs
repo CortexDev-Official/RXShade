@@ -157,14 +157,17 @@ internal static class RenderTest
         s.Vignette = 60;
         yield return ("03_reflection_plus_colorgrade", s.Snapshot());
 
+        s.ApplyPreset(FilterPreset.Mirror);
+        yield return ("04_preset_mirror", s.Snapshot());
+
         s.ApplyPreset(FilterPreset.Water);
-        yield return ("04_preset_water", s.Snapshot());
+        yield return ("05_preset_water", s.Snapshot());
 
         s.ApplyPreset(FilterPreset.Cinematic);
-        yield return ("05_preset_cinematic", s.Snapshot());
+        yield return ("06_preset_cinematic", s.Snapshot());
 
         s.ApplyPreset(FilterPreset.HDR);
-        yield return ("06_preset_hdr", s.Snapshot());
+        yield return ("07_preset_hdr", s.Snapshot());
 
         // Worst case: reflection cranked to maximum. On the bright scene this
         // must NOT wash out to white.
@@ -174,7 +177,7 @@ internal static class RenderTest
         s.ReflectionShine = 100;
         s.ReflectionSharpness = 100;
         s.ReflectionIntensity = 100;
-        yield return ("07_reflection_maxed", s.Snapshot());
+        yield return ("08_reflection_maxed", s.Snapshot());
     }
 
     /// <summary>

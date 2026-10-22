@@ -2,6 +2,8 @@
 
 Real-time visual filters for the Roblox client, inspired by NVIDIA Freestyle.
 
+**Developer:** CortexDev · **Version:** 1.0.2 Beta · **License:** MIT
+
 ## What it does
 
 RXShade captures the Roblox window, applies GPU shaders, and displays the result in a click-through overlay. It uses Windows screen capture, similar to OBS and Xbox Game Bar.
@@ -18,7 +20,7 @@ Some effects are approximations. Real reflections need scene depth data, which a
 
 ## Install
 
-Run `RXShade.exe`. It installs for your Windows user and does not need administrator rights or a separate .NET runtime. You can uninstall it from **Settings → Apps → Installed apps**.
+Run `RXShadeSetup.exe`. It installs for your Windows user and does not need administrator rights or a separate .NET runtime. You can uninstall it from **Settings → Apps → Installed apps**.
 
 ## How to use
 
@@ -31,27 +33,40 @@ The overlay follows the Roblox window, hides when the game is minimised, and doe
 
 ## Filters
 
-Each filter can be switched on or off and adjusted from 0–100%.
+Each filter can be switched on or off and adjusted from 0–100%. Rows show their
+sliders only while the filter is on, so the list stays short.
 
 | Filter | Effect |
 | --- | --- |
-| **Sharpen** | Makes details clearer while avoiding already-bright edges. |
-| **FXAA** | Smooths jagged edges. |
+| **Sharpness** | Makes details clearer while avoiding already-bright edges. |
+| **Anti-aliasing** | Smooths jagged edges (FXAA). |
 | **Bloom** | Adds a soft glow to bright areas. |
-| **Fake Reflection** (`APPROX`) | Adds glossy highlights, light streaks, and a floor reflection. |
-| **Focus** (`APPROX`) | Blurs the image more toward the screen edges. |
-| **HDR** | Adds film-like highlights, contrast, and colour depth. It cannot restore detail missing from the original SDR capture. |
-| **Colour Grading** | Adjusts exposure, temperature, tint, contrast, saturation, and vignette. |
-| **Chromatic Aberration** | Adds a subtle colour fringe near the edges. |
-| **Film Grain** | Adds moving film-style grain. |
+| **Reflections** (`APPROX`) | Adds glossy highlights, light streaks, and a floor reflection. |
+| **Depth blur** (`APPROX`) | Blurs the image more toward the screen edges. |
+| **Tone mapping** | Adds film-like highlights, contrast, and colour depth (ACES). It cannot restore detail missing from the original SDR capture. |
+| **Colour grade** | Adjusts exposure, temperature, tint, contrast, saturation, and vignette. |
+| **Colour fringing** | Adds a subtle colour fringe near the edges. |
+| **Film grain** | Adds moving film-style grain. |
 
-Presets: `Crisp`, `Vivid`, `Cinematic`, `Dreamy`, `Night`, `Water`, and `HDR`. Each preset sets all filter values, so the same preset gives the same result each time.
+Presets: `Crisp`, `Vivid`, `Cinematic`, `Dreamy`, `Night`, `Mirror`, `Water`, and
+`HDR`. Each preset writes every filter value, so the same preset gives the same
+result each time. Choosing one lights its chip; changing any filter afterwards
+clears the chip, because the preset no longer describes what is on screen. Your
+filters and preset are remembered between sessions.
+
+`Mirror` and `Water` are the two floor effects. **Mirror** is a dead-flat,
+fully sharp reflection for polished indoor surfaces. **Water** ripples and
+softens the reflection and streaks light across surfaces.
 
 ## Fake Reflection tips
 
-The effect has three parts: **Wet sheen** adds light streaks across the screen, **Shine** adds small highlights to objects, and **Floor mirror** reflects the scene below the horizon line.
+The effect has three parts: **Wet sheen** adds light streaks across the screen,
+**Surface gloss** adds small highlights to objects, and **Mirror strength**
+reflects the scene below the horizon line. **Reflection detail** controls how
+much sharpness survives in the mirrored image — high reads as polished marble,
+low as rough or wet concrete.
 
-For a good result, start with Wet sheen, adjust Shine, then place the Horizon where the floor meets objects. Use Floor mirror to set reflection strength, Sharpness for detail, and Ripple for water-like movement. The effect is most convincing in open rooms; in corridors, Wet sheen usually does more of the work.
+For a good result, start with Wet sheen, adjust Surface gloss, then place the Horizon where the floor meets objects. Use Mirror strength to set reflection strength, Reflection detail for how sharp the mirror is, and Ripple for water-like movement. The effect is most convincing in open rooms; in corridors, Wet sheen usually does more of the work.
 
 Reflection strength adapts to the surface brightness, helping prevent bright scenes from washing out.
 
@@ -120,8 +135,21 @@ This writes PNGs for different filter combinations and is useful for checking vi
 - **Using integrated graphics:** RXShade uses the GPU connected to your display. If your dedicated GPU says no monitor is attached in the self-test, your display cable may be plugged into the motherboard instead.
 - **Low or capped FPS:** RXShade cannot render frames the game does not produce. Check the footer's rendered/delivered FPS and run the self-test. In Roblox, set **Frame Rate Cap** to **Uncapped** or at least your monitor's refresh rate. Advanced users can also set `DFIntTaskSchedulerTargetFps` in the Roblox client's `ClientAppSettings.json`; RXShade does not edit Roblox files.
 
+## Project structure
 
+```text
+src/RXShade/
+  Capture/      Window capture
+  Graphics/     D3D11 and filter pipeline
+  Interop/      Windows interop
+  Models/       Settings and presets
+  Shaders/      HLSL filters
+  ViewModels/   MainViewModel
+  Views/        Overlay and UI
+installer/      Installer script
+ tools/         Icon generation script
+```
 
 Released under the MIT License. See `LICENSE`.
 
-Built by **[CortexDev](https://cortexdev.online)**.
+Built by **CortexDev**.
