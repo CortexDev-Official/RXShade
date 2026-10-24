@@ -2,8 +2,6 @@
 
 Real-time visual filters for the Roblox client, inspired by NVIDIA Freestyle.
 
-**Developer:** CortexDev · **Version:** 1.0.2 Beta · **License:** MIT
-
 ## What it does
 
 RXShade captures the Roblox window, applies GPU shaders, and displays the result in a click-through overlay. It uses Windows screen capture, similar to OBS and Xbox Game Bar.
